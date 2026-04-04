@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>Мини-апп</title>
+    <title>Безопасный переход</title>
     <style>
         * {
             margin: 0;
@@ -24,64 +24,197 @@
         }
         
         .container {
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
-            text-align: center;
+            margin: 0 auto;
         }
         
-        .icon {
-            font-size: 64px;
-            margin-bottom: 24px;
-        }
-        
-        h2 {
-            font-size: 24px;
+        /* Карточка */
+        .card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 24px;
+            padding: 28px 24px;
             margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Аватарка */
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Заголовок */
+        h2 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 8px;
             font-weight: 600;
         }
         
-        .message {
+        /* Приветствие */
+        .greeting {
+            text-align: center;
             font-size: 16px;
             opacity: 0.8;
-            margin-bottom: 32px;
-            line-height: 1.5;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
         }
         
-        button {
+        .username {
+            color: var(--tg-theme-button-color);
+            font-weight: 600;
+        }
+        
+        /* Блок защиты от ботов */
+        .captcha-section {
+            margin: 20px 0;
+        }
+        
+        .captcha-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .captcha-question {
+            background: var(--tg-theme-bg-color);
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-family: monospace;
+        }
+        
+        .captcha-input {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            border: 2px solid var(--tg-theme-button-color);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .captcha-input:focus {
+            border-color: var(--tg-theme-button-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+        
+        .error-message {
+            color: #ff3b30;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        /* Кнопка */
+        .open-btn {
             width: 100%;
             padding: 16px;
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            margin-top: 8px;
         }
         
-        button:active {
+        .open-btn:active {
             opacity: 0.8;
+            transform: scale(0.98);
         }
         
-        .footer {
+        .open-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Инфо */
+        .info {
             text-align: center;
             font-size: 12px;
             opacity: 0.4;
-            margin-top: 48px;
+            margin-top: 20px;
+        }
+        
+        /* Анимация */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Стиль для ссылки (если показывать) */
+        .hidden-link {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">📎</div>
-        <h2>Вам отправили ссылку</h2>
-        <div class="message">
-            Нажмите на кнопку ниже, чтобы перейти
-        </div>
-        <button id="openBtn">🔗 Открыть ссылку</button>
-        <div class="footer">
-            Telegram Mini App
+    <div class="container fade-in">
+        <div class="card">
+            <div class="avatar" id="avatar">
+                📎
+            </div>
+            
+            <h2>Безопасный переход</h2>
+            
+            <div class="greeting" id="greeting">
+                Загрузка...
+            </div>
+            
+            <!-- Блок защиты от ботов -->
+            <div class="captcha-section">
+                <div class="captcha-title">
+                    🤖 Проверка: вы не робот
+                </div>
+                <div class="captcha-question" id="captchaQuestion">
+                    2 + 2 = ?
+                </div>
+                <input type="number" id="captchaInput" class="captcha-input" placeholder="Введите ответ" autocomplete="off">
+                <div class="error-message" id="errorMessage">
+                    ❌ Неправильный ответ. Попробуйте ещё раз.
+                </div>
+            </div>
+            
+            <button class="open-btn" id="openBtn" disabled>
+                🔗 Открыть ссылку
+            </button>
+            
+            <div class="info">
+                🔒 Безопасная ссылка | Telegram Mini App
+            </div>
         </div>
     </div>
 
@@ -90,7 +223,70 @@
         tg.ready();
         tg.expand();
         
-        // Функция расшифровки base64
+        // Получаем данные пользователя Telegram
+        const user = tg.initDataUnsafe?.user;
+        let userName = "Гость";
+        let userFirstName = "Пользователь";
+        let userUsername = "";
+        
+        if (user) {
+            userFirstName = user.first_name || "Пользователь";
+            userUsername = user.username || "";
+            userName = userUsername ? `@${userUsername}` : userFirstName;
+        }
+        
+        // Показываем приветствие
+        const greetingDiv = document.getElementById('greeting');
+        greetingDiv.innerHTML = `👋 Привет, <span class="username">${userName}</span>!<br>Вам отправили ссылку. Подтвердите, что вы не робот.`;
+        
+        // Генерация случайного капча-вопроса
+        let captchaAnswer = 0;
+        let captchaType = 'math'; // math или text
+        
+        function generateCaptcha() {
+            const types = ['math', 'math', 'math']; // 3 математчиских на 1 текстовый
+            captchaType = types[Math.floor(Math.random() * types.length)];
+            
+            if (captchaType === 'math') {
+                // Математический пример
+                const num1 = Math.floor(Math.random() * 20) + 1;
+                const num2 = Math.floor(Math.random() * 20) + 1;
+                const operators = ['+', '-', '*'];
+                const operator = operators[Math.floor(Math.random() * operators.length)];
+                
+                let question = '';
+                switch(operator) {
+                    case '+':
+                        captchaAnswer = num1 + num2;
+                        question = `${num1} + ${num2} = ?`;
+                        break;
+                    case '-':
+                        captchaAnswer = num1 - num2;
+                        question = `${num1} - ${num2} = ?`;
+                        break;
+                    case '*':
+                        captchaAnswer = num1 * num2;
+                        question = `${num1} × ${num2} = ?`;
+                        break;
+                }
+                document.getElementById('captchaQuestion').innerHTML = question;
+            } else {
+                // Текстовый капча (цифры словами)
+                const numbers = ['один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять', 'десять'];
+                const randomNum = Math.floor(Math.random() * 10) + 1;
+                captchaAnswer = randomNum;
+                document.getElementById('captchaQuestion').innerHTML = `Напишите число: "${numbers[randomNum - 1]}"`;
+                document.getElementById('captchaInput').type = 'text';
+            }
+        }
+        
+        generateCaptcha();
+        
+        // Получаем ссылку из URL (расшифровываем)
+        const urlParams = new URLSearchParams(window.location.search);
+        let encryptedLink = urlParams.get('url');
+        let originalLink = null;
+        
         function decodeBase64Url(encoded) {
             try {
                 let base64 = encoded.replace(/_/g, '/').replace(/-/g, '+');
@@ -100,13 +296,99 @@
                 const decoded = atob(base64);
                 return decoded;
             } catch(e) {
-                console.error('Ошибка:', e);
+                console.error('Ошибка расшифровки:', e);
                 return null;
             }
         }
         
-        // Получаем ссылку из URL
-        const urlParams = new URLSearchParams(window.location.search);
+        if (encryptedLink) {
+            originalLink = decodeBase64Url(encryptedLink);
+            if (!originalLink || !originalLink.startsWith('http')) {
+                originalLink = null;
+            }
+        }
+        
+        // Проверка капчи
+        const captchaInput = document.getElementById('captchaInput');
+        const openBtn = document.getElementById('openBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        function checkCaptcha() {
+            let userAnswer;
+            if (captchaType === 'math') {
+                userAnswer = parseInt(captchaInput.value);
+                if (isNaN(userAnswer)) {
+                    return false;
+                }
+                return userAnswer === captchaAnswer;
+            } else {
+                // Текстовый режим — преобразуем слова в число
+                const words = {
+                    'один': 1, 'два': 2, 'три': 3, 'четыре': 4, 'пять': 5,
+                    'шесть': 6, 'семь': 7, 'восемь': 8, 'девять': 9, 'десять': 10
+                };
+                userAnswer = words[captchaInput.value.toLowerCase().trim()];
+                return userAnswer === captchaAnswer;
+            }
+        }
+        
+        captchaInput.addEventListener('input', function() {
+            if (checkCaptcha()) {
+                // Правильный ответ
+                openBtn.disabled = false;
+                errorMessage.style.display = 'none';
+                captchaInput.style.borderColor = '#34c759';
+            } else {
+                openBtn.disabled = true;
+                errorMessage.style.display = 'none';
+                captchaInput.style.borderColor = 'var(--tg-theme-button-color)';
+            }
+        });
+        
+        // Кнопка открытия
+        openBtn.addEventListener('click', function() {
+            if (!checkCaptcha()) {
+                errorMessage.style.display = 'block';
+                captchaInput.style.borderColor = '#ff3b30';
+                // Генерируем новый вопрос при ошибке
+                generateCaptcha();
+                captchaInput.value = '';
+                return;
+            }
+            
+            if (originalLink) {
+                // Отправляем событие в Telegram, что проверка пройдена
+                tg.sendData(JSON.stringify({ verified: true, link: originalLink }));
+                tg.openLink(originalLink);
+                tg.close();
+            } else {
+                tg.showAlert('❌ Ссылка недействительна или повреждена');
+            }
+        });
+        
+        // Главная кнопка Telegram
+        tg.MainButton.setText("Проверить и открыть");
+        tg.MainButton.onClick(function() {
+            if (checkCaptcha() && originalLink) {
+                tg.openLink(originalLink);
+                tg.close();
+            } else {
+                tg.showAlert('❌ Решите пример, чтобы открыть ссылку');
+            }
+        });
+        tg.MainButton.show();
+        
+        // Установка аватара с первой буквой имени
+        const avatarDiv = document.getElementById('avatar');
+        const firstLetter = (userFirstName[0] || '📎').toUpperCase();
+        if (/[A-Za-zА-Яа-я]/.test(firstLetter)) {
+            avatarDiv.textContent = firstLetter;
+        } else {
+            avatarDiv.textContent = '📎';
+        }
+    </script>
+</body>
+</html>        const urlParams = new URLSearchParams(window.location.search);
         let encryptedLink = urlParams.get('url');
         let originalLink = null;
         
