@@ -24,48 +24,27 @@
         }
         
         .container {
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
-            margin: 0 auto;
-        }
-        
-        .card {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin: 20px 0;
-            word-break: break-all;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
         .icon {
-            font-size: 48px;
-            text-align: center;
-            margin-bottom: 16px;
+            font-size: 64px;
+            margin-bottom: 24px;
         }
         
         h2 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 16px;
             font-weight: 600;
         }
         
-        .link-box {
-            background: var(--tg-theme-bg-color);
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-family: monospace;
-            word-break: break-all;
-            margin: 16px 0;
-            opacity: 0.9;
-        }
-        
-        .link-label {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-bottom: 8px;
+        .message {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 32px;
+            line-height: 1.5;
         }
         
         button {
@@ -75,10 +54,9 @@
             color: var(--tg-theme-button-text-color);
             border: none;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 16px;
             transition: opacity 0.2s;
         }
         
@@ -89,15 +67,8 @@
         .footer {
             text-align: center;
             font-size: 12px;
-            opacity: 0.5;
-            margin-top: 24px;
-        }
-        
-        .encrypted-note {
-            text-align: center;
-            font-size: 11px;
             opacity: 0.4;
-            margin-top: 10px;
+            margin-top: 48px;
         }
     </style>
 </head>
@@ -105,8 +76,79 @@
     <div class="container">
         <div class="icon">📎</div>
         <h2>Вам отправили ссылку</h2>
+        <div class="message">
+            Нажмите на кнопку ниже, чтобы перейти
+        </div>
+        <button id="openBtn">🔗 Открыть ссылку</button>
+        <div class="footer">
+            Telegram Mini App
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
         
-        <div class="card">
+        // Функция расшифровки base64
+        function decodeBase64Url(encoded) {
+            try {
+                // Заменяем URL-safe символы обратно
+                let base64 = encoded.replace(/_/g, '/').replace(/-/g, '+');
+                // Добавляем padding если нужно
+                while (base64.length % 4) {
+                    base64 += '=';
+                }
+                const decoded = atob(base64);
+                return decoded;
+            } catch(e) {
+                console.error('Ошибка расшифровки:', e);
+                return null;
+            }
+        }
+        
+        // Получаем зашифрованную ссылку из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        let encryptedLink = urlParams.get('url');
+        
+        let originalLink = null;
+        
+        if (encryptedLink) {
+            // Расшифровываем ссылку
+            originalLink = decodeBase64Url(encryptedLink);
+            
+            // Проверяем, что получилась нормальная ссылка
+            if (!originalLink || !originalLink.startsWith('http')) {
+                originalLink = null;
+            }
+        }
+        
+        // Кнопка открытия ссылки
+        const openBtn = document.getElementById('openBtn');
+        if (openBtn) {
+            openBtn.addEventListener('click', function() {
+                if (originalLink) {
+                    // Открываем ссылку во встроенном браузере Telegram
+                    tg.openLink(originalLink);
+                    tg.close();
+                } else {
+                    tg.showAlert('❌ Ссылка недействительна');
+                }
+            });
+        }
+        
+        // Настройка главной кнопки Telegram
+        tg.MainButton.setText("Открыть ссылку");
+        tg.MainButton.onClick(function() {
+            if (originalLink) {
+                tg.openLink(originalLink);
+                tg.close();
+            }
+        });
+        tg.MainButton.show();
+    </script>
+</body>
+</html>        <div class="card">
             <div class="link-label">🔗 Ссылка (расшифровано):</div>
             <div class="link-box" id="linkDisplay">Загрузка...</div>
             <button id="openBtn">🔗 Открыть ссылку</button>
