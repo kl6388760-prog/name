@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, system-ui;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        h2 { font-size: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📎 Вам прислали ссылку</h2>
+    <div class="card" id="linkDisplay">Загрузка...</div>
+    <button id="openBtn">🔗 Открыть ссылку</button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    let link = urlParams.get('url') || 'https://example.com';
+    link = decodeURIComponent(link);
+    
+    document.getElementById('linkDisplay').innerText = link;
+    
+    document.getElementById('openBtn').onclick = () => {
+        tg.openLink(link);
+        tg.close();
+    };
+</script>
+</body>
+</html>
