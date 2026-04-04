@@ -92,21 +92,105 @@
             opacity: 0.5;
             margin-top: 24px;
         }
+        
+        .encrypted-note {
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.4;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="icon">📎</div>
-        <h2>Вам прислали ссылку</h2>
+        <h2>Вам отправили ссылку</h2>
         
         <div class="card">
-            <div class="link-label">🔗 Ссылка:</div>
+            <div class="link-label">🔗 Ссылка (расшифровано):</div>
             <div class="link-box" id="linkDisplay">Загрузка...</div>
             <button id="openBtn">🔗 Открыть ссылку</button>
         </div>
         
         <div class="footer">
             Telegram Mini App
+        </div>
+        <div class="encrypted-note" id="encryptedNote"></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        // Функция расшифровки base64
+        function decodeBase64Url(encoded) {
+            try {
+                // Декодируем из base64
+                const decoded = atob(encoded.replace(/_/g, '/').replace(/-/g, '+'));
+                return decoded;
+            } catch(e) {
+                console.error('Ошибка расшифровки:', e);
+                return null;
+            }
+        }
+        
+        // Получаем зашифрованную ссылку из URL параметра
+        const urlParams = new URLSearchParams(window.location.search);
+        let encryptedLink = urlParams.get('url');
+        
+        let originalLink = null;
+        let displayText = "❌ Ошибка расшифровки";
+        
+        if (encryptedLink) {
+            // Показываем, что ссылка зашифрована
+            document.getElementById('encryptedNote').textContent = '🔒 Ссылка была зашифрована';
+            
+            // Расшифровываем
+            originalLink = decodeBase64Url(encryptedLink);
+            
+            if (originalLink && originalLink.startsWith('http')) {
+                displayText = originalLink;
+            } else {
+                displayText = "❌ Неверный формат ссылки";
+                originalLink = null;
+            }
+        } else {
+            displayText = "❌ Ссылка не найдена";
+            document.getElementById('encryptedNote').textContent = '⚠️ Параметр url отсутствует';
+        }
+        
+        // Показываем ссылку на странице
+        const linkDisplay = document.getElementById('linkDisplay');
+        if (linkDisplay) {
+            linkDisplay.textContent = displayText;
+        }
+        
+        // Кнопка открытия ссылки
+        const openBtn = document.getElementById('openBtn');
+        if (openBtn) {
+            openBtn.addEventListener('click', function() {
+                if (originalLink && originalLink.startsWith('http')) {
+                    tg.openLink(originalLink);
+                    tg.close();
+                } else {
+                    tg.showAlert('❌ Ссылка недействительна или повреждена');
+                }
+            });
+        }
+        
+        // Настройка главной кнопки Telegram
+        tg.MainButton.setText("Открыть ссылку");
+        tg.MainButton.onClick(function() {
+            if (originalLink && originalLink.startsWith('http')) {
+                tg.openLink(originalLink);
+                tg.close();
+            }
+        });
+        tg.MainButton.show();
+    </script>
+</body>
+</html>            Telegram Mini App
         </div>
     </div>
 
