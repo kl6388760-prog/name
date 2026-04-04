@@ -1,30 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Мини-апп ссылка</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: -apple-system, system-ui;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
             padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        
         .container {
             max-width: 500px;
+            width: 100%;
             margin: 0 auto;
         }
+        
         .card {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             margin: 20px 0;
             word-break: break-all;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+        
+        .icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        h2 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .link-box {
+            background: var(--tg-theme-bg-color);
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 16px 0;
+            opacity: 0.9;
+        }
+        
+        .link-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+        
         button {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
             border: none;
@@ -32,32 +78,86 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            margin-top: 16px;
+            transition: opacity 0.2s;
         }
-        h2 { font-size: 20px; }
+        
+        button:active {
+            opacity: 0.8;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.5;
+            margin-top: 24px;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>📎 Вам прислали ссылку</h2>
-    <div class="card" id="linkDisplay">Загрузка...</div>
-    <button id="openBtn">🔗 Открыть ссылку</button>
-</div>
+    <div class="container">
+        <div class="icon">📎</div>
+        <h2>Вам прислали ссылку</h2>
+        
+        <div class="card">
+            <div class="link-label">🔗 Ссылка:</div>
+            <div class="link-box" id="linkDisplay">Загрузка...</div>
+            <button id="openBtn">🔗 Открыть ссылку</button>
+        </div>
+        
+        <div class="footer">
+            Telegram Mini App
+        </div>
+    </div>
 
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    let link = urlParams.get('url') || 'https://example.com';
-    link = decodeURIComponent(link);
-    
-    document.getElementById('linkDisplay').innerText = link;
-    
-    document.getElementById('openBtn').onclick = () => {
-        tg.openLink(link);
-        tg.close();
-    };
-</script>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        // Получаем ссылку из URL параметра
+        const urlParams = new URLSearchParams(window.location.search);
+        let link = urlParams.get('url');
+        
+        // Декодируем ссылку
+        if (link) {
+            try {
+                link = decodeURIComponent(link);
+            } catch(e) {
+                console.error('Decode error:', e);
+            }
+        } else {
+            link = 'https://example.com';
+        }
+        
+        // Показываем ссылку на странице
+        const linkDisplay = document.getElementById('linkDisplay');
+        if (linkDisplay) {
+            linkDisplay.textContent = link;
+        }
+        
+        // Кнопка открытия ссылки
+        const openBtn = document.getElementById('openBtn');
+        if (openBtn) {
+            openBtn.addEventListener('click', function() {
+                if (link && link !== 'https://example.com') {
+                    tg.openLink(link);
+                    tg.close();
+                } else {
+                    tg.showAlert('❌ Ссылка не указана или недействительна');
+                }
+            });
+        }
+        
+        // Настройка главной кнопки Telegram (опционально)
+        tg.MainButton.setText("Открыть ссылку");
+        tg.MainButton.onClick(function() {
+            if (link && link !== 'https://example.com') {
+                tg.openLink(link);
+                tg.close();
+            }
+        });
+        tg.MainButton.show();
+    </script>
 </body>
 </html>
